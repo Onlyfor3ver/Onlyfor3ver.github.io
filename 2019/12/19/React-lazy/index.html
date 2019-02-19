@@ -1,0 +1,394 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html>
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  
+  
+  <title>  React.lazy初体验 |   Onlyfor3ver </title>
+
+ 
+  
+    <link rel="icon" href="/images/favicon.png">
+  
+
+
+  <link rel="stylesheet" href="/nayo.min.css"> 
+</head>  
+  <body>   
+    
+      <header class="header">
+	
+  <nav class="header-inner">        
+
+    <span class="iconfont icon-menu mobile-toggle"></span>   	
+
+    <div class="header-logo">
+      <a href="/">
+        <img class="header-logo-img" src="https://avatars1.githubusercontent.com/u/11539604?s=460&v=4">
+      </a>
+    </div>
+
+    <div class="header-menu">          
+              
+          
+            <a class="header-menu-link" id="header-menu-home" href="/">
+              <i class="iconfont icon-home">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-archives" href="/archives">
+              <i class="iconfont icon-archives">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-tags" href="/tags">
+              <i class="iconfont icon-tags">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-about" href="/about">
+              <i class="iconfont icon-about">  
+            </i></a>     
+          
+              
+          
+              <a class="header-menu-link" id="header-menu-search">
+                <i class="iconfont icon-search">  
+              </i></a>
+          
+                  
+    </div>  
+    
+  </nav>
+</header>
+
+   
+
+      <div class="container">       
+          
+          
+            <div class="container-inner">  
+          
+
+          <article class="post">
+  
+	
+<div class="post-header">
+	<p class="post-title">	
+		React.lazy初体验
+	</p>
+
+	<div class="post-info">	
+		<span class="post-info-entry">
+			Dec 19, 2019
+		</span>
+
+		
+		
+			<i class="iconfont icon-words"></i>
+			<span class="post-info-entry">5111
+			</span>
+		
+	</div>
+</div> 
+	
+ 
+
+	  <div class="typo post-content slideDownMin">
+
+		
+
+			
+					<h1 id="React-lazy项目实践"><a href="#React-lazy项目实践" class="headerlink" title="React.lazy项目实践"></a>React.lazy项目实践</h1><p>React16.6于2018年10月份发布，该版本带来了许多新的特性同时赋予给React更强大的功能。其中最为显著的两个特性是<code>React.Suspense</code>和<code>React.lazy</code>。这两个特性，将React的代码分割和懒加载带到了一个新的高度。使用这两个特性，你可以做到的是在真正需要时才加载该组件的文件。</p>
+<p>本文主要介绍我在项目中如何使用<code>React.Suspense</code>和<code>React.lazy</code>以及该特性给我们React开发者带来的好处。</p>
+<h2 id="为什么要使用代码分割"><a href="#为什么要使用代码分割" class="headerlink" title="为什么要使用代码分割"></a>为什么要使用代码分割</h2><p>随着前端技术的不断发展，ES6模块、Babel转换、webpack打包等新技术的出现，前端应用现在完全可以使用模块化的方式完成，便于维护。<br>通常情况下，我们会将所有的模块打包到一个文件中，当请求网页时加载该文件以展示整个应用。但是，随着网页功能的不断扩展，这便带来了网页加载缓慢、交互卡顿等问题，使用户体验非常糟糕。<br>导致这一问题的主要原因是，我们在页面加载时，会一次性加载所有代码，无论是当前要用的代码还是之后用到的代码。但是用户在第一次进来时并不会用到所有的功能，因此<code>code-splitting</code>即代码分割这个名词出现了。</p>
+<p>像webpack便提供了代码分割的功能。webpack中对代码分割的定义如下：</p>
+<blockquote>
+<p>Code splitting is one of the most compelling features of webpack. This feature allows you to split your code into various bundles which can then be loaded on demand or in parallel.</p>
+</blockquote>
+<p>意思就是说可以将代码拆分为多个bundle，同时可以按需或者并行加载。因此，为了提高应用的性能，我们可以尝试如何合理的分割代码并延迟加载。</p>
+<h2 id="如何分割代码？"><a href="#如何分割代码？" class="headerlink" title="如何分割代码？"></a>如何分割代码？</h2><h3 id="动态加载"><a href="#动态加载" class="headerlink" title="动态加载"></a>动态加载</h3><p>ES6标准引入了import以方便我们静态加载模块。形式如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import xxx from xxx.js</span><br></pre></td></tr></table></figure></p>
+<p>尽管import对于我们加载模块很有帮助，但是静态加载模块的方式一定程度上限制了我们来实现异步模块加载。不过，目前动态加载模块的import()语法已处于提案阶段，并且webpack已将他引入并使用。import()提供了基于Promise的API，因此，import()的返回值是一个完成状态或拒绝状态的Promise对象。形式如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import(/* webpackChunkName: &apos;module&apos;*/ &quot;module&quot;)</span><br><span class="line">	.then(() =&gt; &#123;</span><br><span class="line">		//todo</span><br><span class="line">	&#125;)</span><br><span class="line">	.catch(_ =&gt; console.log(&apos;It is an error&apos;))</span><br></pre></td></tr></table></figure></p>
+<p>webpack在编译时，识别到动态加载的import语法，则webpack会为当前动态加载的模块创建一个单独的bundle。如果你使用的是官方的Create-react-app脚手架或React的服务端渲染框架Next.js，那么可以直接使用动态import语法。如果你的脚手架是你自己配置的webpack，那么你需要按照官方指南来设置，请移步[1]。</p>
+<h3 id="动态加载React组件"><a href="#动态加载React组件" class="headerlink" title="动态加载React组件"></a>动态加载React组件</h3><p>当前最为流行的一种方法是使用<code>React-loadable</code>[2]库提供的懒加载React组件。它利用import()语法，使用Promise语法加载React组件。同时，React-loadable支持React的服务端渲染。<br>通常，我们以如下方式实现组件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import LazyComponet from &apos;LazyComponent&apos;;</span><br><span class="line"></span><br><span class="line">export default function DemoComponent() &#123;</span><br><span class="line">	return (</span><br><span class="line">		&lt;div&gt;</span><br><span class="line">			&lt;p&gt;demo component&lt;/p&gt;</span><br><span class="line">			&lt;AComponent /&gt;</span><br><span class="line">		&lt;/div&gt;</span><br><span class="line">	)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在上面的例子中，假设<code>LazyComponet</code>在<code>DemoComponent</code>渲染时我们并不展示。但是因为我们使用import语法将<code>LazyComponet</code>导入，所以在编译时会将<code>LazyComponet</code>的代码与<code>DemoComponent</code>的代码打包到同一个bundle里面。<br>但是，这并不是我们想要的。所以我们可以通过使用<code>React-loadable</code>来懒加载<code>LazyComponet</code>，同时将<code>LazyComponet</code>的代码单独打包到一个bundle里面。我们可以看一下官网提供的例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">import Loadable from &apos;react-loadable&apos;;</span><br><span class="line">import Loading from &apos;./my-loading-component&apos;;</span><br><span class="line"></span><br><span class="line">const LoadableComponent = Loadable(&#123;</span><br><span class="line">  loader: () =&gt; import(&apos;./my-component&apos;),</span><br><span class="line">  loading: Loading,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">export default class App extends React.Component &#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    return &lt;LoadableComponent/&gt;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从例子中我们可以看到，react-loadable使用动态import()方法，并将导入的组件分配给loader属性。同时，react-loadable提供了一个loading属性，以设置在加载组件时将展示的组件。</p>
+<h2 id="React-lazy和React-suspense的使用"><a href="#React-lazy和React-suspense的使用" class="headerlink" title="React.lazy和React.suspense的使用"></a>React.lazy和React.suspense的使用</h2><blockquote>
+<p>React.lazy and Suspense is not yet available for server-side rendering. If you want to do code-splitting in a server rendered app, we recommend Loadable Components. It has a nice guide for bundle splitting with server-side rendering.</p>
+</blockquote>
+<p>在使用之前，我们需要特别注意的一点是，React官方明确支持，React.lazy和Suspense并不支持服务端渲染。因此，使用服务端渲染的同学，请绕行至<code>react-loadable</code>和<code>loadable-components</code>[3]。</p>
+<p>由于我是对原有项目进行的升级，因此，本文以下内容主要针对于老项目升级React最新版所做的工作。</p>
+<h3 id="代码升级React最新版"><a href="#代码升级React最新版" class="headerlink" title="代码升级React最新版"></a>代码升级React最新版</h3><p>如果你的代码是Reactv16，那么可以直接升级到最新版本，当然React16.6已经提供了lazy和suspense方法。如果是v16之前，则按照官方操作迁移。</p>
+<h3 id="确定原有代码的懒加载组件"><a href="#确定原有代码的懒加载组件" class="headerlink" title="确定原有代码的懒加载组件"></a>确定原有代码的懒加载组件</h3><p>首先，按照需求，将非首屏加载的组件确定为懒加载组件，我的项目共确定五个组件可以进行懒加载。修改方式很简单，原有引入组件的方法为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import LazyComponent from &quot;../components/LazyComponent &quot;;</span><br></pre></td></tr></table></figure></p>
+<p>修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">const LazyComponent = React.lazy(() =&gt;</span><br><span class="line">  import(/* webpackChunkName: &apos;lazyComponent&apos;*/ &quot;../components/LazyComponent&quot;)</span><br><span class="line">);</span><br></pre></td></tr></table></figure></p>
+<p>如代码所示：将静态引用组件的代码替换为调用React.lazy()，在lazy()传入一个匿名函数作为参数，在函数中动态引入<code>lazyComponent</code>组件。这样在我们渲染这个组件前，浏览器将不会下载<code>lazyComponent .bundle.js</code>文件和它的依赖。<br>其中，import内的webpackChunkName为我们定义的bundle文件名。</p>
+<p>如果React要渲染<lazycomponent>组件时，组件依赖的代码还没下载好，会出现什么情况？<code>&lt;React.Suspense/&gt;</code>的出现帮我们解决问题。在代码未下载好前，它将会渲染fallback属性传入的值。因此我们的原有代码为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">return (</span><br><span class="line">	&lt;div&gt;</span><br><span class="line">		&lt;MainComponet /&gt;</span><br><span class="line">		&lt;LazyComponent /&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure></lazycomponent></p>
+<p>修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">return (</span><br><span class="line">	&lt;div&gt;</span><br><span class="line">		&lt;MainComponet /&gt;</span><br><span class="line">		&lt;React.Suspense fallback=&#123;&lt;div&gt;正在加载中&lt;/div&gt;&#125;&gt;</span><br><span class="line">			&lt;LazyComponent /&gt;</span><br><span class="line">		&lt;/React.Suspense&gt;</span><br><span class="line">	&lt;/div&gt;</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>fallback中可以修改为任意的spinner，本次不做过多优化。假如你不使用React.suspense，则React会给出你错误提示，因此记得React.lazy和React.Suspense搭配使用。<br>此时我们可以看一下我们的网络请求。</p>
+<p><img src="//img13.360buyimg.com/imagetools/jfs/t1/9488/17/12539/50538/5c383739Eee1219ea/ea8d36833b1aba13.gif" alt="enter image description here"></p>
+<p>从图中我们可以看到，我们动态加载的lazyComponet组件被单独打包到一个bundle里面，然而，在首屏加载的时候，该bundle已经加载到我们的页面中了，这也许并不是我们想要的，我们想要的是当我们需要的时候再加载。接下来我们就控制一下，当我们需要的时候，再加载该文件。</p>
+<h3 id="通过变量控制加载"><a href="#通过变量控制加载" class="headerlink" title="通过变量控制加载"></a>通过变量控制加载</h3><p>原本我选择的五个懒加载组件均属于弹层性质的组件，因此必然会设置一个state来控制该组件的显示与隐藏，因此我们将代码改为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">return (</span><br><span class="line">		&lt;div&gt;</span><br><span class="line">			&lt;MainComponet /&gt;</span><br><span class="line">	        &#123;this.state.showLazyComponent &amp;&amp; (</span><br><span class="line">				&lt;React.Suspense fallback=&#123;&lt;div&gt;正在加载中&lt;/div&gt;&#125;&gt;</span><br><span class="line">					&lt;LazyComponent /&gt;</span><br><span class="line">				&lt;/React.Suspense&gt;</span><br><span class="line">	        )&#125;</span><br><span class="line">			</span><br><span class="line">		&lt;/div&gt;</span><br><span class="line">	)</span><br></pre></td></tr></table></figure>
+<p>此时我们可以看一下网络请求。</p>
+<p><img src="//img14.360buyimg.com/imagetools/jfs/t1/25086/27/5072/67131/5c383a4cE91ba0b6b/e849428313845521.gif" alt="enter image description here"></p>
+<p>从图中可以看出，在首屏加载时，并未加载我们的懒加载组件<code>LazyComponent</code>所对应的bundle包。等到我们点击需要该组件显示时，页面才去加载该js。这便达到了我们代码分离并懒加载的目的。那么我们这么操作，到底主bundle包的体积减少了吗？接下来我们打包文件看一下。</p>
+<h3 id="打包文件"><a href="#打包文件" class="headerlink" title="打包文件"></a>打包文件</h3><p>拆分前打包出来的文件：</p>
+<p><img src="https://img13.360buyimg.com/imagetools/s300x200_jfs/t1/28390/34/4992/10082/5c38410eE533f55c6/8915f5f1c91ba377.png" alt="Alt text"></p>
+<p>拆分后打包出来的文件：</p>
+<p><img src="https://img12.360buyimg.com/imagetools/s300x200_jfs/t1/29192/40/5051/17797/5c3843bbE666b8599/5dcbe33ba7394dea.png" alt="Alt text"></p>
+<p><code>app.js</code>文件变小，随之增加<code>lazyComponent.js</code>。当懒加载组件多时，我们便可一定程度上减少首屏加载文件的大小，提高首屏的渲染速度。</p>
+<h2 id="浏览器参数对比"><a href="#浏览器参数对比" class="headerlink" title="浏览器参数对比"></a>浏览器参数对比</h2><h3 id="DOMContentLoaded"><a href="#DOMContentLoaded" class="headerlink" title="DOMContentLoaded"></a>DOMContentLoaded</h3><p>拆分前：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/s800x50_jfs/t1/27307/16/4955/6028/5c3844d4E12c89716/98dd4c2789326821.png" class="lazyload"></p>
+<p>拆分后：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/s800x50_jfs/t1/26281/26/5092/6266/5c3844d4Ef9508d8b/5514d5c40ebc99c0.png" class="lazyload"></p>
+<h3 id="performance-summary"><a href="#performance-summary" class="headerlink" title="performance summary"></a>performance summary</h3><p>拆分前：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/s374x224_jfs/t1/30803/7/152/16527/5c3844d4Eb5ac53ee/f53366e45a575a43.png" class="lazyload"></p>
+<p>拆分后：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/s374x224_jfs/t1/24426/26/4932/15891/5c3844d4E5fcd0052/c16f0bfd9111237d.png" class="lazyload"></p>
+<ul>
+<li>蓝色：加载（Loading）时间降低</li>
+<li>黄色：脚本运算（Scripting）时间降低</li>
+<li>紫色：渲染（Rendering）时间降低</li>
+<li>绿色：绘制（Painting）时间持平</li>
+<li>灰色：其他（Other）时间降低</li>
+<li>闲置：浏览器空闲时间降低</li>
+</ul>
+<h3 id="接口请求时间"><a href="#接口请求时间" class="headerlink" title="接口请求时间"></a>接口请求时间</h3><p>拆分前：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/jfs/t1/22659/6/5006/18218/5c3844d4Ef3cc1c74/d59c6db4987c3255.png" class="lazyload"></p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/jfs/t1/9441/30/12808/11637/5c3844d4E80ba7926/e6e3a6d52acfca1f.png" class="lazyload"></p>
+<p>拆分后：</p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/jfs/t1/15109/9/5148/19186/5c3844d4E522a772b/199b9777d57ff485.png" class="lazyload"></p>
+<p><img src="/images/placeholder.png" alt="Alt text" data-src="https://img12.360buyimg.com/imagetools/jfs/t1/16405/40/5000/16430/5c3844d4Ec9b81926/aa69cf435d7050b0.png" class="lazyload"></p>
+<p>从图中可以看出，拆分后接口请求数据时间提前。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>从多项数据表明，<code>React.lazy</code>和<code>React.Suspense</code>的使用一定程度上加快了首屏的渲染速度，使得我们的页面加载更快。<br>另外，当我们想添加一个新功能而引入一个新依赖时，我们往往会评估该依赖的大小以及引入该依赖会对原有bundle造成多大影响。假如该功能很少被用到，那么我们可以痛快地使用<code>React.lazy</code>和<code>React.Suspense</code>来按需加载该功能，而无需牺牲用户体验了。</p>
+<h2 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h2><p>[1] <a href="https://webpack.js.org/guides/code-splitting/" target="_blank" rel="noopener">https://webpack.js.org/guides/code-splitting/</a><br>[2] <a href="https://github.com/jamiebuilds/react-loadable" target="_blank" rel="noopener">https://github.com/jamiebuilds/react-loadable</a><br>[3] <a href="https://github.com/smooth-code/loadable-components" target="_blank" rel="noopener">https://github.com/smooth-code/loadable-components</a></p>  					
+					
+	  </div>     
+	  
+
+	<div class="post-footer">
+
+
+  <div class="post-footer-other">
+    
+      <span class="post-footer-item">
+        
+
+
+<span class="donate-btn">
+	<span class="iconfont icon-donate"></span>
+</span>
+
+<div id="donate-box" class="sildeUpMin">
+
+	<span class="donate-cancel iconfont icon-cancel"></span>
+
+	<div class="donate-img-box">
+		<img id="donate-qr-wechat" class="noLazyLoad donate-img lazyload" src="/images/placeholder.png" alt="No Donate Image!" data-src="https://img11.360buyimg.com/imagetools/jfs/t1/26011/22/7362/61668/5c6bace4Ee80973ef/4b4f8f550b8b13db.jpg">	
+		<img id="donate-qr-alipay" class="noLazyLoad donate-img lazyload" src="/images/placeholder.png" alt="No Donate Image!" data-src="/images/donate2.png">	
+	</div>
+
+	<span class="donate-word">世界美好 你也是</span>
+
+	<div class="donate-list">
+		<span class="iconfont icon-donate-wechat"></span>
+		<span class="iconfont icon-donate-alipay"></span>
+	</div>
+
+</div>
+ 
+      </span>        
+       
+    
+      <span class="post-footer-item">
+        <span class="share-btn">
+	<span class="iconfont icon-share"></span>
+</span>
+<div class="-mob-share sildeUpMin">
+	<ul class="-mob-inner">
+	   			             
+        <li class="iconfont 
+		icon-share-qq 
+		-mob-share-qq 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-weixin 
+		-mob-share-weixin 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-weibo 
+		-mob-share-weibo 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-douban 
+		-mob-share-douban 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-facebook 
+		-mob-share-facebook 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-twitter 
+		-mob-share-twitter 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-google 
+		-mob-share-google 
+		-mob-share-link"></li>		
+   	   
+	</ul>
+</div>	
+
+
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=21d601593a1de"></script>
+      </span>  
+               
+  </div>  
+    
+
+
+  <div class="post-footer-meta">
+        	
+
+        
+          <i class="iconfont icon-tag"></i>     
+            <a class="tag-link" href="/tags/React/">React</a>    
+        	
+  </div>
+
+</div>
+
+
+<nav class="post-footer-nav">
+  <div class="post-footer-link">
+  
+      <a href="/2019/12/19/dailyArtical2019/" id="post-nav-older" class="post-nav-link-wrap">
+        <strong class="post-nav-caption">older</strong>
+        
+          <a class="post-nav-title" href="/2019/12/19/dailyArtical2019/">
+          每日一文2019</a>
+      </a>
+  
+  </div>
+  <div class="post-footer-link">
+    
+  </div>
+
+</nav>
+ 
+	
+	
+</article>
+
+	<div class="toc-container">
+			<div class="toc-sidebar">
+			<p class="toc-title">
+				Contents
+			</p>
+			<div class="toc-list">
+				<ol class="toc-inner"><li class="toc-inner-item toc-inner-level-1"><a class="toc-inner-link" href="#React-lazy项目实践"><span class="toc-inner-text">React.lazy项目实践</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#为什么要使用代码分割"><span class="toc-inner-text">为什么要使用代码分割</span></a></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#如何分割代码？"><span class="toc-inner-text">如何分割代码？</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#动态加载"><span class="toc-inner-text">动态加载</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#动态加载React组件"><span class="toc-inner-text">动态加载React组件</span></a></li></ol></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#React-lazy和React-suspense的使用"><span class="toc-inner-text">React.lazy和React.suspense的使用</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#代码升级React最新版"><span class="toc-inner-text">代码升级React最新版</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#确定原有代码的懒加载组件"><span class="toc-inner-text">确定原有代码的懒加载组件</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#通过变量控制加载"><span class="toc-inner-text">通过变量控制加载</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#打包文件"><span class="toc-inner-text">打包文件</span></a></li></ol></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#浏览器参数对比"><span class="toc-inner-text">浏览器参数对比</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#DOMContentLoaded"><span class="toc-inner-text">DOMContentLoaded</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#performance-summary"><span class="toc-inner-text">performance summary</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#接口请求时间"><span class="toc-inner-text">接口请求时间</span></a></li></ol></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#总结"><span class="toc-inner-text">总结</span></a></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#扩展阅读"><span class="toc-inner-text">扩展阅读</span></a></li></ol></li></ol>
+			</div>
+		</div>
+	</div>
+
+          </div> 
+      </div>            
+    
+    <a id="page-backTop">
+      <span>
+        <i class="iconfont icon-backtotop"></i>
+      </span>
+    </a> 
+
+  
+    
+    <div class="search-container sildeUpMin">
+        <div class="search-header">
+            <input type="text" placeholder="Typing Something here." id="search-input" class="search-input">
+            <span class="search-cancel">
+                <i class="iconfont icon-cancel">
+            </i></span>
+        </div>
+        <div id="search-result" class="search-result"></div>
+    </div>
+ 
+     <div class="mobile-menu">      
+
+      
+      <img class="mobile-menu-icon lazyload" src="/images/placeholder.png" data-src="/images/favicon.png">  
+      
+
+         
+            
+
+            <a class="mobile-menu-link" href="/">Home
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/archives">Archives
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/tags">Tags
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/about">About
+            </a>
+            
+         
+                          
+
+            <a class="mobile-menu-link mobile-menu-search" href="#">Search </a>                 
+            
+         
+      
+</div>
+        
+    
+
+
+
+     
+    
+
+
+
+
+<footer id="footer">	    
+
+		
+		<div class="footer-copyright">
+		&copy;
+				
+		2018-
+		
+		2019		
+	
+		Lemon
+		<br>
+
+		Theme  <a href="https://github.com/Lemonreds/hexo-theme-Nayo" target="_blank">Nayo</a>
+		</div>			
+	 
+</footer>   
+
+    <script src="/nayo.bundle.js"></script>           
+  </body>        
+</html>

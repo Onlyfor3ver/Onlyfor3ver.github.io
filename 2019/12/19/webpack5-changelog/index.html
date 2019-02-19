@@ -1,0 +1,555 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html>
+  <head><meta name="generator" content="Hexo 3.8.0">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  
+  
+  <title>  Webpack 5 Changelog |   Onlyfor3ver </title>
+
+ 
+  
+    <link rel="icon" href="/images/favicon.png">
+  
+
+
+  <link rel="stylesheet" href="/nayo.min.css"> 
+</head>  
+  <body>   
+    
+      <header class="header">
+	
+  <nav class="header-inner">        
+
+    <span class="iconfont icon-menu mobile-toggle"></span>   	
+
+    <div class="header-logo">
+      <a href="/">
+        <img class="header-logo-img" src="https://avatars1.githubusercontent.com/u/11539604?s=460&v=4">
+      </a>
+    </div>
+
+    <div class="header-menu">          
+              
+          
+            <a class="header-menu-link" id="header-menu-home" href="/">
+              <i class="iconfont icon-home">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-archives" href="/archives">
+              <i class="iconfont icon-archives">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-tags" href="/tags">
+              <i class="iconfont icon-tags">  
+            </i></a>     
+          
+              
+          
+            <a class="header-menu-link" id="header-menu-about" href="/about">
+              <i class="iconfont icon-about">  
+            </i></a>     
+          
+              
+          
+              <a class="header-menu-link" id="header-menu-search">
+                <i class="iconfont icon-search">  
+              </i></a>
+          
+                  
+    </div>  
+    
+  </nav>
+</header>
+
+   
+
+      <div class="container">       
+          
+          
+            <div class="container-inner">  
+          
+
+          <article class="post">
+  
+	
+<div class="post-header">
+	<p class="post-title">	
+		webpack 5 changelog
+	</p>
+
+	<div class="post-info">	
+		<span class="post-info-entry">
+			Dec 19, 2019
+		</span>
+
+		
+		
+			<i class="iconfont icon-words"></i>
+			<span class="post-info-entry">8803
+			</span>
+		
+	</div>
+</div> 
+	
+ 
+
+	  <div class="typo post-content slideDownMin">
+
+		
+
+			
+					<p>原文链接：<a href="https://github.com/webpack/changelog-v5" target="_blank" rel="noopener">webpack-changelog-v5</a></p>
+<h2 id="指南"><a href="#指南" class="headerlink" title="指南"></a>指南</h2><p>v5重点：</p>
+<ul>
+<li>尝试使用持久性缓存来提高构建性能。</li>
+<li>尝试使用更好的算法和默认值来改进长期缓存</li>
+<li>尝试在不进行重大更新的情况下，清理在v4中实现特性时处于怪异状态的内部结构。</li>
+<li>尝试通过重大更新来尽可能长时间地停留在v5上，从而为将来的特性做准备。</li>
+</ul>
+<h2 id="主要更新"><a href="#主要更新" class="headerlink" title="主要更新"></a>主要更新</h2><h3 id="删除了弃用的东西"><a href="#删除了弃用的东西" class="headerlink" title="删除了弃用的东西"></a>删除了弃用的东西</h3><p>v4中已弃用的所有内容都已删除。<br>迁移：确保你的webpack 4版本不打印弃用警告。<br>以下是一些已删除但在v4中没有弃用警告的内容：</p>
+<ul>
+<li>IgnorePlugin和BannerPlugin必须传递一个options对象。</li>
+</ul>
+<h3 id="删除自动添加的nodejs-polyfills"><a href="#删除自动添加的nodejs-polyfills" class="headerlink" title="删除自动添加的nodejs  polyfills"></a>删除自动添加的nodejs  polyfills</h3><p>在早期，webpack旨在允许在浏览器中运行大多数node.js模块，但模块格局发生了变化，许多模块现在都是为了前端而编写的。<br>webpack &lt;= 4 附带了许多node.js核心模块的polyfill。一旦使用就会自动添加。<br>虽然这使得使用为node.js编写的模块变得简单，但这会将巨大的polyfill添加到bundle中。在许多情况下，我们甚至并不需要这些polyfills。<br>webpack 5停止自动填充这些核心模块，并试图专注于前端兼容的模块。</p>
+<p>迁移：</p>
+<ul>
+<li>尽可能尝试使用前端兼容模块</li>
+<li>可以手动为node.js核心模块添加polyfill。错误消息会告诉你如何执行此操作</li>
+<li>package作者：使用package.json中的browser字段让package做到前端兼容。为浏览器提供可替代的implementations/dependencies</li>
+</ul>
+<p>反馈：请提供您喜欢或不喜欢这种变化的反馈。我们不确定这是否会进入最终版本。</p>
+<h3 id="确定的Chunk以及模块ids"><a href="#确定的Chunk以及模块ids" class="headerlink" title="确定的Chunk以及模块ids"></a>确定的Chunk以及模块ids</h3><p>我们为长期缓存添加了新算法。这些在生产模式下默认启用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chunkIds: &quot;deterministic&quot;, moduleIds: &quot;deterministic&quot;</span><br></pre></td></tr></table></figure>
+<p>算法为module和chunk分配3或4个字符数字id。这是bundle size和长期缓存之间的权衡。<br>迁移：<br>最好使用chunkIds和moduleIds的默认值。您也可以选择使用旧的默认值：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chunkIds: &quot;size&quot;, moduleIds: &quot;size&quot;</span><br></pre></td></tr></table></figure></p>
+<p>这将创建更小的bundles</p>
+<h3 id="命名块ids"><a href="#命名块ids" class="headerlink" title="命名块ids"></a>命名块ids</h3><p>在开发模式下默认启用的新命名块ID算法为块（和文件名）提供了有用的名称。模块ID由路径确定。块ID由块内容确定。<br>所以你不再需要使用以下代码来debug<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import(/* webpackChunkName: &quot;name&quot; */ &quot;module&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>但是这仍然使得控制生产的文件名有意义。<br>在生产环境可以使用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chunkIds: &quot;named&quot;</span><br></pre></td></tr></table></figure></p>
+<p>但要确保不要意外地暴露有关模块名称的敏感信息。<br>迁移：<br>如果在开发模式下，你不喜欢更改文件名，你可以设置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chunkIds: &quot;natural&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="编译器空闲和关闭"><a href="#编译器空闲和关闭" class="headerlink" title="编译器空闲和关闭"></a>编译器空闲和关闭</h3><p>编译器现在需要在使用后关闭。编译器在进入和离开空闲状态时都提供了钩子函数。插件可以使用它来做不重要的工作。即持久缓存缓慢地存储缓存到硬盘。<br>插件认为某些用户可能忘记关闭编译器，因此所有工作最终都应该在空闲状态下完成。当工作完成时，应该防止进程退出。传递回调时，webpack（）会自动调用close。<br>迁移：<br>使用node.js API时，请确保在完成后调用Compiler.close。</p>
+<h3 id="SplitChunks和模块大小"><a href="#SplitChunks和模块大小" class="headerlink" title="SplitChunks和模块大小"></a>SplitChunks和模块大小</h3><p>相比单个数字，模块现在以更好的方式来表示大小。现在有不同类型的大小。<br>SplitChunksPlugin学习了如何处理这些不同的大小并将它们用于minSize和maxSize。默认情况下，只处理javascript大小。但现在可以传递多个值来处理它们。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">minSize: &#123;</span><br><span class="line">  javascript: 30000,</span><br><span class="line">  style: 50000,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>迁移：<br>检查你在构建过程中使用哪种大小类型并且在splitChunks.minSize或splitChunks.maxSize中配置。</p>
+<h3 id="持久缓存"><a href="#持久缓存" class="headerlink" title="持久缓存"></a>持久缓存</h3><p>现在有一个实验性的文件系统缓存。这是可选的，可以通过在配置中设置来生效。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cache: &#123; type: &quot;filesystem&quot; &#125;</span><br></pre></td></tr></table></figure></p>
+<p>目前只有核心功能集已准备就绪，在使用它时，应该了解当前的限制以避免奇怪的错误。如果不理解这些限制，就不要使用此功能。</p>
+<p>模块源代码和文件系统结构存在自动缓存失效。配置和loader/插件/核心更改没有自动缓存失效。配置或构建代码更改时，可以选择手动缓存失效 (cache.version)。</p>
+<p>我们计划添加这个，但是还没有准备好。</p>
+<p>下面是一个指南：</p>
+<ul>
+<li>升级工具依赖项（webpack，loader，plugin）</li>
+<li>改变配置</li>
+</ul>
+<p>提示：如果想要自动执行此操作，最好将webpack.config.js和node_modules / .yarn-integrity哈希化，并将其传递给cache.version。我们可能会这样来做。</p>
+<h3 id="最小的nodejs版本"><a href="#最小的nodejs版本" class="headerlink" title="最小的nodejs版本"></a>最小的nodejs版本</h3><p>最小的node.js版本从6增加到8。<br>迁移：<br>升级到最新的node.js版本</p>
+<h2 id="配置的更改"><a href="#配置的更改" class="headerlink" title="配置的更改"></a>配置的更改</h2><p>结构的变化：</p>
+<ul>
+<li><code>cache: Object</code> removed: Setting to a memory-cache object is no longer possible</li>
+<li><code>cache.type</code> added: It’s now possible to choose between <code>&quot;memory&quot;</code> and <code>&quot;filesystem&quot;</code></li>
+<li>New configuration options for <code>cache.type = &quot;filesystem&quot;</code> added:<ul>
+<li><code>cache.cacheDirectory</code></li>
+<li><code>cache.name</code></li>
+<li><code>cache.version</code></li>
+<li><code>cache.store</code></li>
+<li><code>cache.loglevel</code></li>
+<li><code>cache.hashAlgorithm</code></li>
+</ul>
+</li>
+<li><code>resolve.cache</code> added: Allows to disable/enable the safe resolve cache</li>
+<li><code>resolve.concord</code> removed</li>
+<li>Automatic polyfills for native node.js modules were removed<ul>
+<li><code>node.Buffer</code> removed</li>
+<li><code>node.console</code> removed</li>
+<li><code>node.process</code> removed</li>
+<li><code>node.*</code> (node.js native module) removed</li>
+<li>MIGRATION: <code>resolve.alias</code> and <code>ProvidePlugin</code>. Errors will give hints.</li>
+</ul>
+</li>
+<li><code>optimization.chunkIds: &quot;deterministic&quot;</code> added</li>
+<li><code>optimization.moduleIds: &quot;deterministic&quot;</code> added</li>
+<li><code>optimization.moduleIds: &quot;hashed&quot;</code> deprecated</li>
+<li><code>optimization.moduleIds: &quot;total-size&quot;</code> removed</li>
+<li>Deprecated flags for module and chunk ids were removed<ul>
+<li><code>optimization.hashedModuleIds</code> removed</li>
+<li><code>optimization.namedChunks</code> removed (<code>NamedChunksPlugin</code> too)</li>
+<li><code>optimization.namedModules</code> removed (<code>NamedModulesPlugin</code> too)</li>
+<li><code>optimization.occurrenceOrder</code> removed</li>
+<li>MIGRATION: Use <code>chunkIds</code> and <code>moduleIds</code></li>
+</ul>
+</li>
+<li><code>optimization.splitChunks</code> sizes can now be objects with a size per source type<ul>
+<li><code>minSize</code></li>
+<li><code>maxSize</code></li>
+<li><code>maxAsyncSize</code></li>
+<li><code>maxInitialSize</code></li>
+</ul>
+</li>
+<li><code>optimization.splitChunks</code> <code>maxAsyncSize</code> and <code>maxInitialSize</code> added next to <code>maxSize</code>: allows to specify different max sizes for initial and async chunks</li>
+<li><code>optimization.splitChunks</code> <code>name: true</code> removed: Automatic names are no longer supported<ul>
+<li>MIGRATION: Use the default. <code>chunkIds: &quot;named&quot;</code> will give your files useful names for debugging</li>
+</ul>
+</li>
+<li><code>optimization.splitChunks.cacheGroups[].idHint</code> added: Gives a hint how the named chunk id should be chosen</li>
+<li><code>optimization.splitChunks</code> <code>automaticNamePrefix</code> removed<ul>
+<li>MIGRATION: Use <code>idHint</code> instead</li>
+</ul>
+</li>
+<li><code>output.devtoolLineToLine</code> removed<ul>
+<li>MIGRATION: No replacement</li>
+</ul>
+</li>
+<li><code>output.hotUpdateChunkFilename: Function</code> is now forbidden: It never worked anyway.</li>
+<li><code>output.hotUpdateMainFilename: Function</code> is now forbidden: It never worked anyway.</li>
+<li><code>stats.chunkRootModules</code> added: Show root modules for chunks</li>
+<li><code>stats.orphanModules</code> added: Show modules which are not emitted</li>
+<li><code>stats.runtime</code> added: Show runtime modules</li>
+<li><code>stats.chunkRelations</code> added: Show parent/children/sibling chunks (since alpha.1)</li>
+<li><code>stats.preset</code> added: select a preset (since alpha.1)</li>
+<li><code>BannerPlugin.banner</code> signature changed<ul>
+<li><code>data.basename</code> removed</li>
+<li><code>data.query</code> removed</li>
+<li>MIGRATION: extract from <code>filename</code></li>
+</ul>
+</li>
+<li><code>SourceMapDevToolPlugin</code> <code>lineToLine</code> removed<ul>
+<li>MIGRATION: No replacement</li>
+</ul>
+</li>
+<li><code>[hash]</code> as hash for the full compilation is now deprecated<ul>
+<li>MIGRATION: Use <code>[fullhash]</code> instead or better use another hash option</li>
+</ul>
+</li>
+<li><code>[modulehash]</code> is deprecated<ul>
+<li>MIGRATION: Use <code>[hash]</code> instead</li>
+</ul>
+</li>
+<li><code>[moduleid]</code> is deprecated<ul>
+<li>MIGRATION: Use <code>[id]</code> instead</li>
+</ul>
+</li>
+<li><code>[filebase]</code> removed<ul>
+<li>MIGRATION: Use <code>[base]</code> instead</li>
+</ul>
+</li>
+<li>New placeholders for file-based templates (i. e. SourceMapDevToolPlugin)<ul>
+<li><code>[name]</code></li>
+<li><code>[base]</code></li>
+<li><code>[path]</code></li>
+<li><code>[ext]</code></li>
+</ul>
+</li>
+<li><code>externals</code> when passing a function it has now a different signature <code>({ context, request }, callback)</code><ul>
+<li>MIGRATION: Change signature</li>
+</ul>
+</li>
+</ul>
+<h3 id="更改默认值"><a href="#更改默认值" class="headerlink" title="更改默认值"></a>更改默认值</h3><ul>
+<li><code>module.unsafeCache</code> is now only enabled for <code>node_modules</code> by default</li>
+<li><code>optimization.moduleIds</code> defaults to <code>deterministic</code> in production mode instead of <code>size</code></li>
+<li><code>optimization.chunkIds</code> defaults to <code>deterministic</code> in production mode instead of <code>total-size</code></li>
+<li><code>optimization.nodeEnv</code> defaults to <code>false</code> in <code>none</code> mode</li>
+<li><code>resolve(Loader).cache</code> defaults to <code>true</code> when a <code>cache</code> is used</li>
+<li><code>resolve(Loader).cacheWithContext</code> defaults to <code>false</code></li>
+<li><code>node.global</code> defaults to <code>false</code></li>
+</ul>
+<h2 id="主要的内部变化"><a href="#主要的内部变化" class="headerlink" title="主要的内部变化"></a>主要的内部变化</h2><p>下面的变化仅和你编写插件时相关：</p>
+<h3 id="运行时模块"><a href="#运行时模块" class="headerlink" title="运行时模块"></a>运行时模块</h3><p>大部分运行时代码被移动到所谓的“运行时模块”中。这些特殊的模块添加了运行时代码。它们可以添加到任何块中，但目前始终添加到运行时块中。“Runtime requirements”控制将哪些运行时模块添加到bundle中。他确保只将使用的运行时代码添加到bundle中。在将来，运行时模块还可以添加到按需加载的块中，以在需要时加载运行时代码。</p>
+<p>核心的运行时代码现在非常小，只包含<code>__webpack_require__</code>函数，模块工厂和模块实例缓存。将来可以使用替代代码来避免将bundle包装在IIFE中并允许ESM类型的导出。</p>
+<p>迁移：在插件中请考虑使用RuntimeModules来将运行时代码注入到webpack运行时。</p>
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>添加了序列化机制以允许在webpack中序列化复杂对象。它具有可选语义，因此需要显式标记应该序列化的类。大多数模块，所有依赖项和一些错误已经实现该功能。</p>
+<p>迁移：使用自定义模块或依赖项时，请确保它们可序列化，以从持久性缓存中受益。</p>
+<h3 id="可扩展的缓存"><a href="#可扩展的缓存" class="headerlink" title="可扩展的缓存"></a>可扩展的缓存</h3><p>添加了具有插件接口的<code>Cache</code>类。此类可用于写入和读取缓存。根据配置，不同的插件会将功能添加到缓存中。<code>MemoryCachePlugin</code>添加了内存缓存。<code>FileCachePlugin</code>添加了持久性缓存。</p>
+<p><code>FileCachePlugin</code>使用序列化机制来持久化缓存到硬盘中。</p>
+<h3 id="Hook-object-frozen"><a href="#Hook-object-frozen" class="headerlink" title="Hook object frozen"></a>Hook object frozen</h3><p>带钩子的类使其钩子对象冻结，因此不再可能通过这种方式添加自定义钩子。</p>
+<p>迁移： 推荐的添加自定义钩子的方法是通过WeakMap和一个静态的方法 <code>getXXXHooks(XXX)</code>（即getCompilationHook(compilation)）。内部类使用相同的机制来自定义钩子。</p>
+<h3 id="移除Tapable的基础类"><a href="#移除Tapable的基础类" class="headerlink" title="移除Tapable的基础类"></a>移除Tapable的基础类</h3><p>删除webpack3插件的compat层，它已被webpack4抛弃。</p>
+<p>迁移：使用tapable的新API。</p>
+<h3 id="阶段性的钩子"><a href="#阶段性的钩子" class="headerlink" title="阶段性的钩子"></a>阶段性的钩子</h3><p>在运行过程中不同阶段有许多的钩子，即<code>optimizeDependenciesBasic</code>、<code>optimizeDependencies</code>和 <code>optimizeDependenciesAdvanced</code>。这些已经被删除，我们可以通过<code>stage</code>选项来使用单一的钩子。查看<br><code>OptimizationStages</code>以获取可能的值。</p>
+<p>迁移：添加<code>stage</code>选项。</p>
+<h3 id="order和ids"><a href="#order和ids" class="headerlink" title="order和ids"></a>order和ids</h3><p>webpack常常在编译阶段整理modules和chunks，这是一个特殊的方法来分配ids。</p>
+<p>目前已不再是这种情况了。Order不再用于id的产生。 而是在插件中完全控制id生成。</p>
+<p>已删除用于优化module和chunk顺序的挂钩。</p>
+<p>迁移：你不能再依赖于编译中的module和chunk的顺序。</p>
+<h3 id="数组到Set"><a href="#数组到Set" class="headerlink" title="数组到Set"></a>数组到Set</h3><ul>
+<li>Compilation.modules 是Set类型</li>
+<li>Compilation.chunks 是Set类型</li>
+</ul>
+<p>有一个复合层可以打印弃用警告。</p>
+<p>迁移：使用Set方法取代Array方法</p>
+<h3 id="Compilation-fileSystemInfo"><a href="#Compilation-fileSystemInfo" class="headerlink" title="Compilation.fileSystemInfo"></a>Compilation.fileSystemInfo</h3><p>这些类可以以缓存的方式访问文件系统信息。目前，它允许请求文件和目录时间戳。如果可能，有关时间戳的信息从观察者传输，否则由文件系统访问确定。将来会要求添加文件内容哈希，并且模块可以使用文件内容而不是文件哈希来检查有效性。</p>
+<p>迁移：使用<code>compilation.fileSystemInfo</code>来代替<code>file/contextTimestamps</code></p>
+<h3 id="热更新"><a href="#热更新" class="headerlink" title="热更新"></a>热更新</h3><p>HMR runtime已重构为runtime Modules。<code>HotUpdateChunkTemplate</code>已被合并到<code>ChunkTemplate</code>。ChunkTemplates 和插件也可以处理<code>HotUpdateChunks</code>。<br>HMR运行时的javascript部分已与核心HMR运行时分离。其他模块类型现在也可以以自己的方式处理HMR。将来允许HMR用来mini-css-extract-plugin 或 WASM模块。</p>
+<p>迁移：由于这是一项新功能，以前没有实现，所以不需要迁移。</p>
+<h3 id="工作队列"><a href="#工作队列" class="headerlink" title="工作队列"></a>工作队列</h3><p>webpack过去常常处理模块时使用函数调用函数以及限制并行性的信号量的方式。<code>Compilation.semaphore</code>已经被移除。异步队列来处理工作队列。每个步骤都有一个单独的队列：</p>
+<ul>
+<li><code>Compilation.factorizeQueue</code>:  为一组依赖项调用模块工厂</li>
+<li><code>Compilation.addModuleQueue</code>: 将模块添加到编译中（可以从缓存中恢复模块）</li>
+<li><code>Compilation.buildQueue</code>: 必要时构建模块（可以存储模块到缓存）</li>
+<li><code>Compilation.rebuildQueue</code>: 如果手动触发，则再次构建模块</li>
+<li><code>Compilation.processDependenciesQueue</code>: 处理模块的依赖</li>
+</ul>
+<p>这些队列有一些钩子可以监视和拦截工作进程。<br>将来，多个编译器可以协同工作，并且可以通过拦截这些队列来完成工作协调。</p>
+<p>迁移：以前没有，无需迁移。</p>
+<h3 id="Module-and-Chunk-Graph"><a href="#Module-and-Chunk-Graph" class="headerlink" title="Module and Chunk Graph"></a>Module and Chunk Graph</h3><p>webpack常常将将解析的模块存储在依赖中，将包含的模块存储在chunk中。现在已经不这样了。有关模块如何在模块图中连接的所有信息现在都存储在ModuleGraph类中。有关模块如何与块连接的所有信息都存储在ChunkGraph类中。依赖于chunk graph的信息也存储在相关类中。</p>
+<p>这意味着已移动有关模块的以下信息：</p>
+<ul>
+<li>Module connections -&gt; ModuleGraph</li>
+<li>Module issuer -&gt; ModuleGraph</li>
+<li>Module optimization bailout -&gt; ModuleGraph (TODO check if it should ChunkGraph instead)</li>
+<li>Module usedExports -&gt; ModuleGraph</li>
+<li>Module pre order index -&gt; ModuleGraph</li>
+<li>Module post order index -&gt; ModuleGraph</li>
+<li>Module depth -&gt; ModuleGraph</li>
+<li>Module profile -&gt; ModuleGraph</li>
+<li>Module id -&gt; ChunkGraph</li>
+<li>Module hash -&gt; ChunkGraph</li>
+<li>Module runtime requirements -&gt; ChunkGraph</li>
+<li>Module is in chunk -&gt; ChunkGraph</li>
+<li>Module is entry in chunk -&gt; ChunkGraph</li>
+<li>Module is runtime module in chunk -&gt; ChunkGraph</li>
+<li>Chunk runtime requirements -&gt; ChunkGraph</li>
+</ul>
+<h3 id="初始化-fragments"><a href="#初始化-fragments" class="headerlink" title="初始化 fragments"></a>初始化 fragments</h3><p>已删除DependenciesBlockVariables以支持InitFragments。DependencyTemplates现在可以添加InitFragments以将代码注入模块源的顶部。InitFragments允许重复数据删除</p>
+<h3 id="模块源类型"><a href="#模块源类型" class="headerlink" title="模块源类型"></a>模块源类型</h3><p>模块现在必须通过<code>Module.getSourceTypes（）</code>告诉它们支持哪些源类型。根据不同的插件，使用此类型调用<code>source（）</code> 即对于源类型<code>javascript</code> ，<code>JavascriptModulesPlugin</code>将源代码嵌入到bundle中。源类型<code>webassembly</code>将使<code>WebAssemblyModulesPlugin</code>释放一个wasm文件。自定义源类型是可能的，即<br>mini-css-extract-plugin可能会使用源类型<code>stylesheet</code>将源代码嵌入到css文件中。</p>
+<p>模块类型和源类型之间没有关系。即模块类型<code>json</code>也使用源类型<code>javascript</code>和模块类型<code>webassembly / experimental</code>使用源类型<code>javascript</code>和<code>webassembly</code>。</p>
+<p>迁移：自定义模块需要实现这些新的接口方法</p>
+<h3 id="可扩展的统计数据"><a href="#可扩展的统计数据" class="headerlink" title="可扩展的统计数据"></a>可扩展的统计数据</h3><p>stats预设，默认，json，和tostring现在由插件系统提供。将当前的Stats转换为插件。</p>
+<p>迁移：现在可以自定义它，而不是替换整个统计功能。现在可以将额外信息添加到统计信息json中，而不是写入单独的文件。</p>
+<p><img style="display:block;margin:auto;" src="https://img11.360buyimg.com/imagetools/s300x300_jfs/t1/26011/22/7362/61668/5c6bace4Ee80973ef/4b4f8f550b8b13db.jpg"></p>  					
+					
+	  </div>     
+	  
+
+	<div class="post-footer">
+
+
+  <div class="post-footer-other">
+    
+      <span class="post-footer-item">
+        
+
+
+<span class="donate-btn">
+	<span class="iconfont icon-donate"></span>
+</span>
+
+<div id="donate-box" class="sildeUpMin">
+
+	<span class="donate-cancel iconfont icon-cancel"></span>
+
+	<div class="donate-img-box">
+		<img id="donate-qr-wechat" class="noLazyLoad donate-img" src="https://img11.360buyimg.com/imagetools/jfs/t1/26011/22/7362/61668/5c6bace4Ee80973ef/4b4f8f550b8b13db.jpg" alt="No Donate Image!">	
+		<img id="donate-qr-alipay" class="noLazyLoad donate-img" src="/images/donate2.png" alt="No Donate Image!">	
+	</div>
+
+	<span class="donate-word">世界美好 你也是</span>
+
+	<div class="donate-list">
+		<span class="iconfont icon-donate-wechat"></span>
+		<span class="iconfont icon-donate-alipay"></span>
+	</div>
+
+</div>
+ 
+      </span>        
+       
+    
+      <span class="post-footer-item">
+        <span class="share-btn">
+	<span class="iconfont icon-share"></span>
+</span>
+<div class="-mob-share sildeUpMin">
+	<ul class="-mob-inner">
+	   			             
+        <li class="iconfont 
+		icon-share-qq 
+		-mob-share-qq 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-weixin 
+		-mob-share-weixin 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-weibo 
+		-mob-share-weibo 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-douban 
+		-mob-share-douban 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-facebook 
+		-mob-share-facebook 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-twitter 
+		-mob-share-twitter 
+		-mob-share-link"></li>		
+   	   			             
+        <li class="iconfont 
+		icon-share-google 
+		-mob-share-google 
+		-mob-share-link"></li>		
+   	   
+	</ul>
+</div>	
+
+
+<script id="-mob-share" src="https://f1.webshare.mob.com/code/mob-share.js?appkey=21d601593a1de"></script>
+      </span>  
+               
+  </div>  
+    
+
+
+  <div class="post-footer-meta">
+        	
+
+        
+          <i class="iconfont icon-tag"></i>     
+            <a class="tag-link" href="/tags/webpack/">webpack</a>    
+        	
+  </div>
+
+</div>
+
+
+<nav class="post-footer-nav">
+  <div class="post-footer-link">
+  
+      <a href="/2019/12/19/webpack4.0.0.beta/" id="post-nav-older" class="post-nav-link-wrap">
+        <strong class="post-nav-caption">older</strong>
+        
+          <a class="post-nav-title" href="/2019/12/19/webpack4.0.0.beta/">
+          webpack 4.0 新特性, Try it!</a>
+      </a>
+  
+  </div>
+  <div class="post-footer-link">
+    
+        <a href="/2019/12/19/fe-tools/" id="post-nav-newer" class="post-nav-link-wrap">
+          <strong class="post-nav-caption">newer</strong>
+             
+            <a class="post-nav-title" href="/2019/12/19/fe-tools/">
+            前端开发工具整理</a>
+        </a>
+    
+  </div>
+
+</nav>
+ 
+	
+	
+</article>
+
+	<div class="toc-container">
+			<div class="toc-sidebar">
+			<p class="toc-title">
+				Contents
+			</p>
+			<div class="toc-list">
+				<ol class="toc-inner"><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#指南"><span class="toc-inner-text">指南</span></a></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#主要更新"><span class="toc-inner-text">主要更新</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#删除了弃用的东西"><span class="toc-inner-text">删除了弃用的东西</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#删除自动添加的nodejs-polyfills"><span class="toc-inner-text">删除自动添加的nodejs  polyfills</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#确定的Chunk以及模块ids"><span class="toc-inner-text">确定的Chunk以及模块ids</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#命名块ids"><span class="toc-inner-text">命名块ids</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#编译器空闲和关闭"><span class="toc-inner-text">编译器空闲和关闭</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#SplitChunks和模块大小"><span class="toc-inner-text">SplitChunks和模块大小</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#持久缓存"><span class="toc-inner-text">持久缓存</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#最小的nodejs版本"><span class="toc-inner-text">最小的nodejs版本</span></a></li></ol></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#配置的更改"><span class="toc-inner-text">配置的更改</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#更改默认值"><span class="toc-inner-text">更改默认值</span></a></li></ol></li><li class="toc-inner-item toc-inner-level-2"><a class="toc-inner-link" href="#主要的内部变化"><span class="toc-inner-text">主要的内部变化</span></a><ol class="toc-inner-child"><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#运行时模块"><span class="toc-inner-text">运行时模块</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#序列化"><span class="toc-inner-text">序列化</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#可扩展的缓存"><span class="toc-inner-text">可扩展的缓存</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#Hook-object-frozen"><span class="toc-inner-text">Hook object frozen</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#移除Tapable的基础类"><span class="toc-inner-text">移除Tapable的基础类</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#阶段性的钩子"><span class="toc-inner-text">阶段性的钩子</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#order和ids"><span class="toc-inner-text">order和ids</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#数组到Set"><span class="toc-inner-text">数组到Set</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#Compilation-fileSystemInfo"><span class="toc-inner-text">Compilation.fileSystemInfo</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#热更新"><span class="toc-inner-text">热更新</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#工作队列"><span class="toc-inner-text">工作队列</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#Module-and-Chunk-Graph"><span class="toc-inner-text">Module and Chunk Graph</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#初始化-fragments"><span class="toc-inner-text">初始化 fragments</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#模块源类型"><span class="toc-inner-text">模块源类型</span></a></li><li class="toc-inner-item toc-inner-level-3"><a class="toc-inner-link" href="#可扩展的统计数据"><span class="toc-inner-text">可扩展的统计数据</span></a></li></ol></li></ol>
+			</div>
+		</div>
+	</div>
+
+          </div> 
+      </div>            
+    
+    <a id="page-backTop">
+      <span>
+        <i class="iconfont icon-backtotop"></i>
+      </span>
+    </a> 
+
+  
+    
+    <div class="search-container sildeUpMin">
+        <div class="search-header">
+            <input type="text" placeholder="Typing Something here." id="search-input" class="search-input">
+            <span class="search-cancel">
+                <i class="iconfont icon-cancel">
+            </i></span>
+        </div>
+        <div id="search-result" class="search-result"></div>
+    </div>
+ 
+     <div class="mobile-menu">      
+
+      
+      <img class="mobile-menu-icon" src="/images/favicon.png">  
+      
+
+         
+            
+
+            <a class="mobile-menu-link" href="/">Home
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/archives">Archives
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/tags">Tags
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/about">About
+            </a>
+            
+         
+                          
+
+            <a class="mobile-menu-link mobile-menu-search" href="#">Search </a>                 
+            
+         
+      
+</div>
+        
+    
+
+
+
+     
+    
+
+
+
+
+<footer id="footer">	    
+
+		
+		<div class="footer-copyright">
+		&copy;
+				
+		2018-
+		
+		2019		
+	
+		Lemon
+		<br>
+
+		Theme  <a href="https://github.com/Lemonreds/hexo-theme-Nayo" target="_blank">Nayo</a>
+		</div>			
+	 
+</footer>   
+
+    <script src="/nayo.bundle.js"></script>           
+  </body>        
+</html>
